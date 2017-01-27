@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace PofyTools
 {
-	public class Panel : GameActor, IToggleable
+	public class Panel : StateableActor, IToggleable
 	{
 		protected List<Selectable> _selectebles = new List<Selectable> ();
 		//public bool selfSubscribe = true;
@@ -93,5 +93,19 @@ namespace PofyTools
 				AlertCanvas.Instance.inputsEnabled -= this.EnableElements;
 			}
 		}
+
+		#region implemented abstract members of StateableActor
+
+		public override void ConstructAvailableStates ()
+		{
+//			throw new System.NotImplementedException ();
+		}
+
+		public override void InitializeStateStack ()
+		{
+//			throw new System.NotImplementedException ();
+		}
+
+		#endregion
 	}
 }
