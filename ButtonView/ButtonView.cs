@@ -4,50 +4,59 @@ using UnityEngine.UI;
 
 namespace PofyTools
 {
-	[RequireComponent (typeof(Button))]
-	public abstract class ButtonView : MonoBehaviour, ISubscribable
-	{
-		protected Button _button;
-		// Use this for initialization
-		protected virtual void Start ()
-		{
-			this._button = GetComponent<Button> ();
-			Subscribe ();
-		}
+    [RequireComponent(typeof(Button))]
+    public abstract class ButtonView : StateableActor
+    {
+        protected Button _button;
+        protected Image icon;
+        protected Text _label;
 
+        // Use this for initialization
+        protected virtual void Start()
+        {
+            Subscribe();
+        }
 
+        protected abstract void OnClick();
 
-		protected abstract void OnClick ();
+        #region Subscribe
 
-		#region ISubscribable implementation
+        public override bool Subscribe()
+        {
+            if (base.Subscribe())
+            {
+                this._button.onClick.AddListener(this.OnClick);
+                return true;
+            }
+            return false;
+        }
 
-		public virtual void Subscribe ()
-		{
-			Unsubscribe ();
-			this._button.onClick.AddListener (this.OnClick);
-			this._isSubscribed = true;
-		}
+        public override bool Unsubscribe()
+        {
+            if (base.Unsubscribe())
+            {
+                this._button.onClick.RemoveListener(this.OnClick);
+                return true;
+            }
+            return false;
+        }
 
-		public virtual void Unsubscribe ()
-		{
-			if (this._button != null)
-				this._button.onClick.RemoveListener (this.OnClick);
-			this._isSubscribed = false;
-		}
+        #endregion
 
-		protected bool _isSubscribed = false;
+        #region Initialize
 
-		public bool isSubscribed {
-			get {
-				return this._isSubscribed;
-			}
-		}
+        public override bool Initialize()
+        {
+            if (base.Initialize())
+            {
+                this._button = GetComponent<Button>();
+                this._label = GetComponentInChildren<Text>();
 
-		protected virtual void OnDestroy ()
-		{
-			Unsubscribe ();
-		}
+                return true;
+            }
+            return false;
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

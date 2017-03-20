@@ -1,6 +1,9 @@
 ﻿/// <summary>
 /// Asyncronly loads next level and unloads the previous.
 /// </summary>
+using System.Collections;
+
+
 namespace PofyTools.LevelLoader
 {
     using UnityEngine;
@@ -8,141 +11,175 @@ namespace PofyTools.LevelLoader
     using UnityEngine.SceneManagement;
     using System.Collections.Generic;
 
-    public class LevelLoader : GameActor
-	{
+    public class LevelLoader : Panel
+    {
+        #region Variables
+
         //Script logging tag
         public const string TAG = "<color=yellow><b>LevelLoader:</color><b> ";
 
         //Persistant singleton instance
-		public static LevelLoader Loader;
+        private static LevelLoader _Loader;
 
         //List of tips to display on loading
-		public List<string> tips;
+        public List<string> tips;
         
-		public Panel loadingPanel;
-		public RectTransform tipPanel;
-		public Text progress;
-		public Text tip;
-		private int offset = 0;
-		bool isTargerScene;
-		public string toLoad;
+        public RectTransform tipPanel;
+        public Text progress;
+        public Text tip;
+        private int offset = 0;
+        bool isTargerScene;
+        public string toLoad;
+        bool _shouldClose = false;
 
-		AsyncOperation asyncOperation = null;
+        AsyncOperation asyncOperation = null;
 
+        #endregion
 
-		void Awake ()
-		{
-			if (Loader == null)
-				Loader = this;
-			if (Loader != this)
-				Destroy (this.gameObject);
-			DontDestroyOnLoad (this.gameObject);
-		}
+        #region Mono
 
-		protected override void Start ()
-		{
-			base.Start ();
+        void Awake()
+        {
+            if (_Loader == null)
+                _Loader = this;
+            else if (_Loader != this)
+            {
+                Destroy(this.gameObject);
+                return;
+            }
+
+            DontDestroyOnLoad(this.gameObject);
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+
+            #if !UNITY_5_3
 			SceneManager.sceneLoaded += this.OnSceneLoaded;
-            this.tipPanel.gameObject.SetActive(false);
-            LoadCustomScene (this.toLoad);
-		}
+            #endif
 
-		public static void SetTips (params string[] tips)
-		{
-            LevelLoader.Loader.tips.Clear();
+            this.tipPanel.gameObject.SetActive(false);
+            LoadCustomScene(this.toLoad);
+        }
+
+        #endregion
+
+        #if !UNITY_5_3
+        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (this._shouldClose)
+            {
+                this._shouldClose = false;
+            }
+        }
+
+
+#else
+        void OnLevelWasLoaded()
+        {
+            if (this._shouldClose)
+            {
+                this._shouldClose = false;
+                this.Close();
+            }
+        }
+        #endif
+
+        #region API
+
+        public static void LoadLevel()
+        {
+            LoadCustomScene("Game");
+        }
+
+        public static void LoadMenu()
+        {
+            LoadCustomScene("Menu");
+        }
+
+        public static void LoadCustomScene(string sceneName)
+        {
+            if (string.IsNullOrEmpty(sceneName))
+            {
+                Debug.LogWarning(TAG + "Scene name can not be empty!");
+            }
+
+            LevelLoader._Loader.Open();
+            Debug.Log(TAG + "Loading " + sceneName);
+            LevelLoader._Loader.RefreshTip();
+            LevelLoader._Loader.toLoad = sceneName;
+            Resources.UnloadUnusedAssets();
+            LevelLoader._Loader.LoadLoaderScene();
+        }
+
+        public static void SetTips(params string[] tips)
+        {
+            LevelLoader._Loader.tips.Clear();
             AddTips(tips);
-		}
+        }
 
         public static void AddTips(params string[] tips)
         {
-            LevelLoader.Loader.tips.AddRange(tips);
-            LevelLoader.Loader.tips.RemoveAll(x => string.IsNullOrEmpty(x));
+            LevelLoader._Loader.tips.AddRange(tips);
+            LevelLoader._Loader.tips.RemoveAll(x => string.IsNullOrEmpty(x));
         }
 
-		void ShowCustomTip (string msg)
-		{
-			this.tipPanel.gameObject.SetActive (true);
-			this.tip.text = msg;
-		}
+        public static void ShowCustomTip(string msg)
+        {
+            LevelLoader._Loader.tipPanel.gameObject.SetActive(true);
+            LevelLoader._Loader.tip.text = msg;
+        }
 
-		bool _shouldClose = false;
+        #endregion
 
-		void OnSceneLoaded (Scene scene, LoadSceneMode mode)
-		{
-			if (this._shouldClose) {
-				this._shouldClose = false;
-				this.loadingPanel.Close ();
-			}
-		}
+        void LoadLoaderScene()
+        {
+            this.progress.text = "0%";
+            this.offset = 0;
+            this.isTargerScene = false;
+            this.asyncOperation = SceneManager.LoadSceneAsync("Load");
+            StartCoroutine(this.CheckAsyncOperationProgress());
+        }
 
-		static void CreateLoader ()
-		{
-			if (Loader == null) {
-				GameObject go = Resources.Load ("Loader") as GameObject;
-				GameObject.Instantiate (go);
-			}
-		}
+        void LoadTargetScene()
+        {
+            this.offset = 50;
+            this.isTargerScene = true;
 
-		public static void LoadLevel ()
-		{
-			LoadCustomScene ("Game");
-		}
+            this.asyncOperation = SceneManager.LoadSceneAsync(toLoad);
+            StartCoroutine(this.CheckAsyncOperationProgress());
+        }
 
-		public static void LoadMenu ()
-		{
-			LoadCustomScene ("Menu");
-		}
+        void RefreshTip()
+        {
+            this.tip.text = this.tips[Random.Range(0, this.tips.Count)];
+            this.tipPanel.gameObject.SetActive(true);
+        }
 
-		public static void LoadCustomScene (string sceneName)
-		{
-            Debug.Log(TAG + "Loading " + sceneName);
-			Loader.RefreshTip ();
-			Loader.toLoad = sceneName;
-			Resources.UnloadUnusedAssets ();
-			Loader.LoadLoaderScene ();
-		}
+        #region Coroutines
 
-		void LoadLoaderScene ()
-		{
-			this.loadingPanel.Open ();
-			this.progress.gameObject.SetActive (true);
-			this.progress.text = "0%";
-			this.offset = 0;
-			this.isTargerScene = false;
-			this.asyncOperation = SceneManager.LoadSceneAsync ("Load");
-			AddState (this.CheckAsyncOperationProgress);
-		}
+        IEnumerator CheckAsyncOperationProgress()
+        {
+            while (!this.asyncOperation.isDone)
+            {
+                this.progress.text = string.Format("{0}%", (int)(this.asyncOperation.progress * 50) + this.offset);
+                yield return null;
+            }
+            this.asyncOperation = null;
+            System.GC.Collect();
+            Resources.UnloadUnusedAssets();
 
-		void LoadTargetScene ()
-		{
-			this.offset = 50;
-			this.isTargerScene = true;
-			this.asyncOperation = SceneManager.LoadSceneAsync (toLoad);
-			AddState (this.CheckAsyncOperationProgress);
-		}
+            if (!isTargerScene)
+            {
+                LoadTargetScene();
+            }
+            else
+            {
+                this.Close();
+            }
+        }
 
-		void RefreshTip ()
-		{
-			this.tip.text = this.tips [Random.Range (0, this.tips.Count)];
-			this.tipPanel.gameObject.SetActive (true);
-		}
-
-		void CheckAsyncOperationProgress ()
-		{
-			this.progress.text = string.Format ("{0}%", (int)(this.asyncOperation.progress * 50) + this.offset);
-
-			if (this.asyncOperation.isDone) {
-				this.asyncOperation = null;
-				System.GC.Collect ();
-				Resources.UnloadUnusedAssets ();
-				RemoveState (this.CheckAsyncOperationProgress);
-
-				if (!isTargerScene) {
-					LoadTargetScene ();
-				} else {
-					this.loadingPanel.Close ();
-				}
-			}
-		}
-	}
+        #endregion
+    }
 }

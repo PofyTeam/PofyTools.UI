@@ -5,107 +5,201 @@ using UnityEngine.UI;
 
 namespace PofyTools
 {
-	public class Panel : StateableActor, IToggleable
-	{
-		protected List<Selectable> _selectebles = new List<Selectable> ();
-		//public bool selfSubscribe = true;
-		public bool closeOnSubscribe = false;
+    [RequireComponent(typeof(CanvasGroup))]
+    public class Panel : StateableActor, IToggleable
+    {
+        #region Variables
 
-		#region MONO
+        public CanvasGroup canvasGroup;
+        protected List<Selectable> _selectebles = new List<Selectable>();
+        public bool closeOnSubscribe = false;
 
-		protected override void Start ()
-		{
-			base.Start ();
-			OnTransformChildrenChanged ();
-//			Close ();
+        [Header("Fade State")]
+        public float fadeDuration = 0.5f;
+        protected float _fadeTimer = 0;
+        public bool fadeOut = true;
+        public bool fadeIn = false;
 
-		}
+        #endregion
 
-		protected virtual void OnEnable ()
-		{
-			EnableElements ();
-		}
+        #region Mono
 
-		protected virtual void OnDisable ()
-		{
-			DisableElements ();
-		}
+        //        protected virtual void OnEnable()
+        //        {
+        //            EnableElements();
+        //        }
+        //
+        //        protected virtual void OnDisable()
+        //        {
+        //            DisableElements();
+        //        }
 
-		protected virtual void OnTransformChildrenChanged ()
-		{
-			GetComponentsInChildren<Selectable> (true, this._selectebles);
-		}
+        protected virtual void OnTransformChildrenChanged()
+        {
+            GetComponentsInChildren<Selectable>(true, this._selectebles);
+        }
 
-		#endregion
+        #endregion
 
-		#region IToggleable implementation
+        #region IToggleable implementation
 
-		public virtual void Toggle ()
-		{
-			if (this.gameObject.activeSelf)
-				Close ();
-			else
-				Open ();
-		}
+        protected bool _isOpen;
 
-		public virtual void Open ()
-		{
-			this.gameObject.SetActive (true);
-		}
+        public bool isOpen
+        {
+            get { return this._isOpen; }
+        }
 
-		public virtual void Close ()
-		{
-			this.gameObject.SetActive (false);
-		}
+        public virtual void Toggle()
+        {
+            if (this._isOpen)
+                Close();
+            else
+                Open();
+        }
 
-		#endregion
+        public virtual void Open()
+        {
+            if (!this._isOpen)
+            {
+                this.gameObject.SetActive(true);
+                StopAllCoroutines();
+                this.EnableElements();
+                this._isOpen = true;
 
-		public virtual void EnableElements ()
-		{
-			foreach (var selectable in this._selectebles)
-				selectable.interactable = true;
-		}
+                if (this.fadeIn)
+                {
+                    StartCoroutine(this.FadeIn());
+                }
+                else
+                {
+                    this.canvasGroup.alpha = 1f;
+                }
+            }
+        }
 
-		public virtual void DisableElements ()
-		{
-			foreach (var selectable in this._selectebles)
-				selectable.interactable = false;
-		}
+        public virtual void Close()
+        {
+            if (this._isOpen)
+            {
+                StopAllCoroutines();
+                this.DisableElements();
+                this._isOpen = false;
+                if (this.fadeOut)
+                {
+                    StartCoroutine(this.FadeOut());
+                }
+                else
+                {
+                    this.canvasGroup.alpha = 0f;
+                }
+            }
+        }
+
+        public virtual void EnableElements()
+        {
+            foreach (var selectable in this._selectebles)
+                selectable.interactable = true;
+        }
+
+        public virtual void DisableElements()
+        {
+            foreach (var selectable in this._selectebles)
+                selectable.interactable = false;
+        }
+
+        #endregion
+
+        #region Initialize
+
+        public override bool Initialize()
+        {
+            if (base.Initialize())
+            {
+                if (!this.canvasGroup)
+                    this.canvasGroup = GetComponent<CanvasGroup>();
+                
+                OnTransformChildrenChanged();
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region Subscribe
+
+        public override bool Subscribe()
+        {
+            if (base.Subscribe())
+            {
+                //
+                if (this.closeOnSubscribe)
+                {
+                    Close();
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public override bool Unsubscribe()
+        {
+            if (base.Unsubscribe())
+            {
+                //
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region Coroutines
+
+        IEnumerator FadeIn()
+        {
+            this._fadeTimer = this.fadeDuration;
+            this.canvasGroup.alpha = 0;
+
+            while (_fadeTimer > 0)
+            {
+                this._fadeTimer -= Time.unscaledDeltaTime;
+                if (this._fadeTimer < 0)
+                    this._fadeTimer = 0;
+                float normalizedTime = 0;
+//                if(UIResourceManager.Resources != null)
+                normalizedTime = UIResourceManager.Resources.fadeCurve.Evaluate(1 - this._fadeTimer / this.fadeDuration);
+
+                this.canvasGroup.alpha = Mathf.Lerp(0f, 1f, normalizedTime);
+                yield return null;
+            }
+
+            this.canvasGroup.alpha = 1;
+        }
+
+        IEnumerator FadeOut()
+        {
+            this._fadeTimer = this.fadeDuration;
+            this.canvasGroup.alpha = 1;
+            while (_fadeTimer > 0)
+            {
+                this._fadeTimer -= Time.unscaledDeltaTime;
+                if (this._fadeTimer < 0)
+                    this._fadeTimer = 0;
+
+                float normalizedTime = UIResourceManager.Resources.fadeCurve.Evaluate(1 - this._fadeTimer / this.fadeDuration);
+                this.canvasGroup.alpha = Mathf.Lerp(1f, 0f, normalizedTime);
+//                Debug.LogError(this.canvasGroup.alpha);
+
+                yield return null;
+            }
+
+            this.canvasGroup.alpha = 0;
+            this.gameObject.SetActive(false);
+        }
 
 
-		public override void Subscribe ()
-		{
-			base.Subscribe ();
-			if (AlertCanvas.Instance != null) {
-				AlertCanvas.Instance.inputsDisabled += this.DisableElements;
-				AlertCanvas.Instance.inputsEnabled += this.EnableElements;
-			}
-			if (this.closeOnSubscribe) {
-				Close ();
-			}
-		}
-
-		public override void Unsubscribe ()
-		{
-			base.Unsubscribe ();
-			if (AlertCanvas.Instance != null) {
-				AlertCanvas.Instance.inputsDisabled -= this.DisableElements;
-				AlertCanvas.Instance.inputsEnabled -= this.EnableElements;
-			}
-		}
-
-		#region implemented abstract members of StateableActor
-
-		public override void ConstructAvailableStates ()
-		{
-//			throw new System.NotImplementedException ();
-		}
-
-		public override void InitializeStateStack ()
-		{
-//			throw new System.NotImplementedException ();
-		}
-
-		#endregion
-	}
+        #endregion
+    }
 }
