@@ -11,12 +11,6 @@ namespace PofyTools
         protected Image icon;
         protected Text _label;
 
-        // Use this for initialization
-        protected virtual void Start()
-        {
-            Subscribe();
-        }
-
         protected abstract void OnClick();
 
         #region Subscribe

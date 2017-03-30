@@ -3,17 +3,17 @@ using System.Collections;
 
 namespace PofyTools
 {
-	public class ButtonLoadLevelView : ButtonView
-	{
-		#region implemented abstract members of ButtonView
+    public class ButtonLoadLevelView : ButtonView
+    {
+        #region implemented abstract members of ButtonView
 
-		protected override void OnClick ()
-		{
-			LevelLoader.LevelLoader.LoadLevel ();
-		}
+        protected override void OnClick()
+        {
+            LevelLoader.LevelLoader.LoadLevel();
+        }
 
-		#endregion
+        #endregion
 
 
-	}
+    }
 }
