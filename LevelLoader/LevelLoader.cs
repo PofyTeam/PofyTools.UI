@@ -38,7 +38,7 @@ namespace PofyTools.LevelLoader
 
         #region Mono
 
-        void Awake()
+        protected override void Awake()
         {
             if (_Loader == null)
                 _Loader = this;
@@ -73,6 +73,7 @@ namespace PofyTools.LevelLoader
                 this._shouldClose = false;
             }
         }
+
 
 
 #else
