@@ -78,6 +78,24 @@ namespace PofyTools
             }
         }
 
+        public virtual void ForceClose()
+        {
+            StopAllCoroutines();
+            this.DisableElements();
+            this._isOpen = false;
+            this.canvasGroup.alpha = 0f;
+            this.gameObject.SetActive(false);
+        }
+
+        public virtual void ForceOpen()
+        {
+            StopAllCoroutines();
+            this.EnableElements();
+            this._isOpen = true;
+            this.canvasGroup.alpha = 1f;
+            this.gameObject.SetActive(true);
+        }
+
         public virtual void Close()
         {
             if (this._isOpen)
@@ -92,6 +110,7 @@ namespace PofyTools
                 else
                 {
                     this.canvasGroup.alpha = 0f;
+                    this.gameObject.SetActive(false);
                 }
             }
         }
