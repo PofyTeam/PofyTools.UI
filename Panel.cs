@@ -67,14 +67,14 @@ namespace PofyTools
                 this.EnableElements();
                 this._isOpen = true;
 
-                if (this.fadeIn)
-                {
-                    StartCoroutine(this.FadeIn());
-                }
-                else
-                {
+//                if (this.fadeIn)
+//                {
+//                    StartCoroutine(this.FadeIn());
+//                }
+//                else
+//                {
                     this.canvasGroup.alpha = 1f;
-                }
+//                }
             }
         }
 
@@ -103,15 +103,15 @@ namespace PofyTools
                 StopAllCoroutines();
                 this.DisableElements();
                 this._isOpen = false;
-                if (this.fadeOut)
-                {
-                    StartCoroutine(this.FadeOut());
-                }
-                else
-                {
+//                if (this.fadeOut)
+//                {
+//                    StartCoroutine(this.FadeOut());
+//                }
+//                else
+//                {
                     this.canvasGroup.alpha = 0f;
                     this.gameObject.SetActive(false);
-                }
+//                }
             }
         }
 
@@ -174,51 +174,51 @@ namespace PofyTools
 
         #endregion
 
-        #region Coroutines
-
-        IEnumerator FadeIn()
-        {
-            this._fadeTimer = this.fadeDuration;
-            this.canvasGroup.alpha = 0;
-
-            while (_fadeTimer > 0)
-            {
-                this._fadeTimer -= Time.unscaledDeltaTime;
-                if (this._fadeTimer < 0)
-                    this._fadeTimer = 0;
-                float normalizedTime = 0;
-//                if(UIResourceManager.Resources != null)
-                normalizedTime = UIResourceManager.Resources.fadeCurve.Evaluate(1 - this._fadeTimer / this.fadeDuration);
-
-                this.canvasGroup.alpha = Mathf.Lerp(0f, 1f, normalizedTime);
-                yield return null;
-            }
-
-            this.canvasGroup.alpha = 1;
-        }
-
-        IEnumerator FadeOut()
-        {
-            this._fadeTimer = this.fadeDuration;
-            this.canvasGroup.alpha = 1;
-            while (_fadeTimer > 0)
-            {
-                this._fadeTimer -= Time.unscaledDeltaTime;
-                if (this._fadeTimer < 0)
-                    this._fadeTimer = 0;
-
-                float normalizedTime = UIResourceManager.Resources.fadeCurve.Evaluate(1 - this._fadeTimer / this.fadeDuration);
-                this.canvasGroup.alpha = Mathf.Lerp(1f, 0f, normalizedTime);
-//                Debug.LogError(this.canvasGroup.alpha);
-
-                yield return null;
-            }
-
-            this.canvasGroup.alpha = 0;
-            this.gameObject.SetActive(false);
-        }
-
-
-        #endregion
+//        #region Coroutines
+//
+//        IEnumerator FadeIn()
+//        {
+//            this._fadeTimer = this.fadeDuration;
+//            this.canvasGroup.alpha = 0;
+//
+//            while (_fadeTimer > 0)
+//            {
+//                this._fadeTimer -= Time.unscaledDeltaTime;
+//                if (this._fadeTimer < 0)
+//                    this._fadeTimer = 0;
+//                float normalizedTime = 0;
+////                if(UIResourceManager.Resources != null)
+//                normalizedTime = UIResourceManager.Resources.fadeCurve.Evaluate(1 - this._fadeTimer / this.fadeDuration);
+//
+//                this.canvasGroup.alpha = Mathf.Lerp(0f, 1f, normalizedTime);
+//                yield return null;
+//            }
+//
+//            this.canvasGroup.alpha = 1;
+//        }
+//
+//        IEnumerator FadeOut()
+//        {
+//            this._fadeTimer = this.fadeDuration;
+//            this.canvasGroup.alpha = 1;
+//            while (_fadeTimer > 0)
+//            {
+//                this._fadeTimer -= Time.unscaledDeltaTime;
+//                if (this._fadeTimer < 0)
+//                    this._fadeTimer = 0;
+//
+//                float normalizedTime = UIResourceManager.Resources.fadeCurve.Evaluate(1 - this._fadeTimer / this.fadeDuration);
+//                this.canvasGroup.alpha = Mathf.Lerp(1f, 0f, normalizedTime);
+////                Debug.LogError(this.canvasGroup.alpha);
+//
+//                yield return null;
+//            }
+//
+//            this.canvasGroup.alpha = 0;
+//            this.gameObject.SetActive(false);
+//        }
+//
+//
+//        #endregion
     }
 }
