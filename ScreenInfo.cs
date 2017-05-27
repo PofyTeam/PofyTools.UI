@@ -100,26 +100,26 @@ public class InfoFlowState: StateObject<ScreenInfo>
 
     public InfoFlowState(ScreenInfo co)
     {
-        this._controlledObject = co;
+        this.controlledObject = co;
         InitializeState();
     }
 
     public override void InitializeState()
     {
-        this._hasUpdate = true;
+        this.hasUpdate = true;
     }
 
     public override void EnterState()
     {
-        if (this._controlledObject.target != null)
-            this._controlledObject.selfTransform.position = this._controlledObject.target.transform.position + this._controlledObject.offset;
+        if (this.controlledObject.target != null)
+            this.controlledObject.selfTransform.position = this.controlledObject.target.transform.position + this.controlledObject.offset;
         else
-            this._controlledObject.selfTransform.position = this._controlledObject.offset;
+            this.controlledObject.selfTransform.position = this.controlledObject.offset;
 		
-        this._timer = this._controlledObject.duration;
-        this._controlledObject.selfTransform.localRotation = Quaternion.Euler(Vector3.forward * Random.Range(-30, 30));
-        this._controlledObject.selfTransform.Translate(this._controlledObject.speed * Vector3.up, Space.Self);
-        this.countMultiplier = this._controlledObject.pool.Count * 0.33f;
+        this._timer = this.controlledObject.duration;
+        this.controlledObject.selfTransform.localRotation = Quaternion.Euler(Vector3.forward * Random.Range(-30, 30));
+        this.controlledObject.selfTransform.Translate(this.controlledObject.speed * Vector3.up, Space.Self);
+        this.countMultiplier = this.controlledObject.pool.Count * 0.33f;
 
     }
 
@@ -128,10 +128,10 @@ public class InfoFlowState: StateObject<ScreenInfo>
         this._timer -= Time.smoothDeltaTime;
         if (this._timer < 0)
             this._timer = 0;
-        float normalizedTime = this._controlledObject.alphaCurve.Evaluate(1 - this._timer / this._controlledObject.duration);
-        this._controlledObject.canvasGroup.alpha = normalizedTime;
-        this._controlledObject.selfTransform.localScale = normalizedTime * Vector3.one * this.countMultiplier;
-        this._controlledObject.selfTransform.Translate(this._controlledObject.speed * Time.smoothDeltaTime * Vector3.up, Space.Self);
+        float normalizedTime = this.controlledObject.alphaCurve.Evaluate(1 - this._timer / this.controlledObject.duration);
+        this.controlledObject.canvasGroup.alpha = normalizedTime;
+        this.controlledObject.selfTransform.localScale = normalizedTime * Vector3.one * this.countMultiplier;
+        this.controlledObject.selfTransform.Translate(this.controlledObject.speed * Time.smoothDeltaTime * Vector3.up, Space.Self);
         if (this._timer <= 0)
             return true;
         return false;
@@ -139,7 +139,7 @@ public class InfoFlowState: StateObject<ScreenInfo>
 
     public override void ExitState()
     {
-        this._controlledObject.Free();
+        this.controlledObject.Free();
     }
 
 }
