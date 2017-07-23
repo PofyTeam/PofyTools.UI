@@ -23,7 +23,7 @@
         {
             base.Awake();
             this._selfTransform = this.transform;
-            this._visual = this._selfTransform.FindChild("Visual");
+            this._visual = this._selfTransform.Find("Visual");
             this._icon = this._visual.GetComponent<Image>();
         }
 

@@ -16,7 +16,7 @@ namespace PofyTools.LevelLoader
         #region Variables
 
         //Script logging tag
-        public const string TAG = "<color=yellow><b>LevelLoader:</color><b> ";
+        public const string TAG = "<color=yellow><b>LevelLoader:</b></color> ";
 
         //Persistant singleton instance
         private static LevelLoader _Loader;
@@ -56,7 +56,7 @@ namespace PofyTools.LevelLoader
             base.Start();
 
             #if !UNITY_5_3
-			SceneManager.sceneLoaded += this.OnSceneLoaded;
+            SceneManager.sceneLoaded += this.OnSceneLoaded;
             #endif
 
             this.tipPanel.gameObject.SetActive(false);
@@ -76,7 +76,7 @@ namespace PofyTools.LevelLoader
 
 
 
-#else
+        #else
         void OnLevelWasLoaded()
         {
             if (this._shouldClose)
