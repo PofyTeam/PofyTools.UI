@@ -103,16 +103,6 @@ namespace PofyTools
             return true;
         }
 
-        public void OnBackButtonListenerAdd()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void OnBackButtonListenerRemove()
-        {
-            throw new System.NotImplementedException();
-        }
-
         #endregion
 
         #region Initialize
