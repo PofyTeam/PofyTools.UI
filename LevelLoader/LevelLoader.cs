@@ -3,7 +3,6 @@
 /// </summary>
 using System.Collections;
 
-
 namespace PofyTools.LevelLoader
 {
     using UnityEngine;
@@ -21,15 +20,12 @@ namespace PofyTools.LevelLoader
         //Persistant singleton instance
         private static LevelLoader _Loader;
 
-        //List of tips to display on loading
-        public List<string> tips;
-        
-        public RectTransform tipPanel;
         public Text progress;
-        public Text tip;
-        private int offset = 0;
+        private float offset = 0;
+
         bool isTargerScene;
         public string toLoad;
+
         bool _shouldClose = false;
 
         AsyncOperation asyncOperation = null;
@@ -55,17 +51,19 @@ namespace PofyTools.LevelLoader
         {
             base.Start();
 
-            #if !UNITY_5_3
             SceneManager.sceneLoaded += this.OnSceneLoaded;
-            #endif
 
-            this.tipPanel.gameObject.SetActive(false);
             LoadCustomScene(this.toLoad);
+        }
+
+        protected override void OnDestroy()
+        {
+            RemoveAllLoadProgressListener();
+            base.OnDestroy();
         }
 
         #endregion
 
-        #if !UNITY_5_3
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             if (this._shouldClose)
@@ -74,18 +72,34 @@ namespace PofyTools.LevelLoader
             }
         }
 
+        #region Progress Listeners
 
+        protected List<ILoadProgressListener> _listeners = new List<ILoadProgressListener>();
 
-        #else
-        void OnLevelWasLoaded()
+        public static void AddLoadProgressListener(ILoadProgressListener listener)
         {
-            if (this._shouldClose)
+            _Loader._listeners.Add(listener);
+        }
+
+        public static void RemoveLoadProgressListener(ILoadProgressListener listener)
+        {
+            _Loader._listeners.Remove(listener);
+        }
+
+        public static void RemoveAllLoadProgressListener()
+        {
+            _Loader._listeners.Clear();
+        }
+
+        protected void OnProgressChange(float progress)
+        {
+            for (int i = this._listeners.Count - 1; i >= 0; --i)
             {
-                this._shouldClose = false;
-                this.Close();
+                this._listeners[i].OnLoadProgressChange(progress);
             }
         }
-        #endif
+
+        #endregion
 
         #region API
 
@@ -108,28 +122,10 @@ namespace PofyTools.LevelLoader
 
             LevelLoader._Loader.Open();
             Debug.Log(TAG + "Loading " + sceneName);
-            LevelLoader._Loader.RefreshTip();
+//            LevelLoader._Loader.RefreshTip();
             LevelLoader._Loader.toLoad = sceneName;
             Resources.UnloadUnusedAssets();
             LevelLoader._Loader.LoadLoaderScene();
-        }
-
-        public static void SetTips(params string[] tips)
-        {
-            LevelLoader._Loader.tips.Clear();
-            AddTips(tips);
-        }
-
-        public static void AddTips(params string[] tips)
-        {
-            LevelLoader._Loader.tips.AddRange(tips);
-            LevelLoader._Loader.tips.RemoveAll(x => string.IsNullOrEmpty(x));
-        }
-
-        public static void ShowCustomTip(string msg)
-        {
-            LevelLoader._Loader.tipPanel.gameObject.SetActive(true);
-            LevelLoader._Loader.tip.text = msg;
         }
 
         #endregion
@@ -145,17 +141,11 @@ namespace PofyTools.LevelLoader
 
         void LoadTargetScene()
         {
-            this.offset = 50;
+            this.offset = 0.5F;
             this.isTargerScene = true;
 
             this.asyncOperation = SceneManager.LoadSceneAsync(toLoad);
             StartCoroutine(this.CheckAsyncOperationProgress());
-        }
-
-        void RefreshTip()
-        {
-            this.tip.text = this.tips[Random.Range(0, this.tips.Count)];
-            this.tipPanel.gameObject.SetActive(true);
         }
 
         #region Coroutines
@@ -164,9 +154,12 @@ namespace PofyTools.LevelLoader
         {
             while (!this.asyncOperation.isDone)
             {
-                this.progress.text = string.Format("{0}%", (int)(this.asyncOperation.progress * 50) + this.offset);
+                float progress = this.asyncOperation.progress * 0.5f + this.offset;
+                this.progress.text = string.Format("{0}%", (int)(progress * 100));
+                OnProgressChange(progress);
                 yield return null;
             }
+
             this.asyncOperation = null;
             System.GC.Collect();
             Resources.UnloadUnusedAssets();
@@ -182,5 +175,10 @@ namespace PofyTools.LevelLoader
         }
 
         #endregion
+    }
+
+    public interface ILoadProgressListener:ISubscribable
+    {
+        void OnLoadProgressChange(float progress);
     }
 }
