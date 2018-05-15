@@ -24,9 +24,9 @@
         public Image progress;
         public GameObject progressFrame;
         public State state = State.Inactive;
-        private List<Package> _queue = new List<Package> ();
+
         public NotifyState notifyState;
-        public Image backShine;
+        //public Image backShine;
         public bool animateProgress = false;
         public float _progressTarget = 0;
         private Package _currentPackage;
@@ -81,14 +81,11 @@
             }
             else
             {
-
-
                 if (package.Equals (this._currentPackage))
                     return;
 
-
-                int queueSize = this._queue.Count;
-                if (queueSize > 0 && package.Equals (this._queue[queueSize - 1]))
+                int queueSize = _queue.Count;
+                if (queueSize > 0 && package.Equals (_queue[queueSize - 1]))
                 {
                     return;
                 }
@@ -97,67 +94,72 @@
             }
         }
 
-        public void Notify (string message, Sprite icon, float progress)
-        {
-            Notify (new Package (message, icon, progress));
-        }
-
-        public static void Show (string message, Sprite icon, float progress)
-        {
-            NotificationView._instance.Notify (message, icon, progress);
-        }
-
-        public static void Hide ()
-        {
-            NotificationView._instance.Close ();
-        }
-
         #endregion
 
         #region IToggleable
 
         public override void Close ()
         {
-            //        Debug.LogError(TAG + "I'm about to close...");
             this.state = State.Inactive;
-            this.backShine.gameObject.SetActive (false);
+            //this.backShine.gameObject.SetActive (false);
             base.Close ();
 
-            if (this._queue.Count > 0)
-            {
-                //            Debug.LogError(TAG + "Hold on! There is something > " + this._queue.Count);
-                Package next = this._queue[0];
-                this._queue.RemoveAt (0);
-                Notify (next);
-
-            }
+            CheckQueue ();
         }
 
         public override void Open ()
         {
             base.Open ();
-            //        Color color = ColorUtilities.AverageColorFromTexture(this.icon.sprite.texture);
-            Color color = Color.white;
-            color.a = 0.25f;
-            this.backShine.color = color;
-            this.backShine.gameObject.SetActive (true);
+
+            //Color color = Color.white;
+            //color.a = 0.25f;
+            //this.backShine.color = color;
+            //this.backShine.gameObject.SetActive (true);
             AddState (this.notifyState);
-            //GlobalEventManager.Events.dockOnNotify ();
         }
 
         #endregion
 
-        #region Queuing
+        #region Static API
+        private static List<Package> _queue = new List<Package> ();
 
-        void AddToQueue (Package packageToQueue)
+        public static void Show (Package notificationPackage)
         {
-            if (!this._queue.Contains (packageToQueue))
+            if (NotificationView._instance != null)
+                NotificationView._instance.Notify (notificationPackage);
+            else
+                NotificationView.AddToQueue (notificationPackage);
+
+        }
+
+        public static void Show (string message, Sprite icon, float progress)
+        {
+            NotificationView.Show (new Package (message, icon, progress));
+        }
+
+        public static void Hide ()
+        {
+            if (NotificationView._instance != null)
+                NotificationView._instance.Close ();
+        }
+
+        private static void AddToQueue (Package packageToQueue)
+        {
+            if (!_queue.Contains (packageToQueue))
             {
-                //            Debug.LogError(TAG + "Queuing to the list...");
-                this._queue.Add (packageToQueue);
+                _queue.Add (packageToQueue);
             }
         }
 
+        private static void CheckQueue ()
+        {
+            if (_queue.Count > 0)
+            {
+                Package next = _queue[0];
+                _queue.RemoveAt (0);
+                Show (next);
+            }
+        }
         #endregion
 
         #region ISubscribable
@@ -170,6 +172,7 @@
                     Debug.LogWarning (TAG + "Singleton already exists! Overwritting...");
                 _instance = this;
 
+                CheckQueue ();
                 return true;
             }
             return false;

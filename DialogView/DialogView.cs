@@ -62,7 +62,7 @@
                 this.confirmer += onConfirm;
             }
 
-            this.gameObject.SetActive (true);
+            this.Open ();
 
 #if UNITY_EDITOR
             LogDialog (message, type, onConfirm);

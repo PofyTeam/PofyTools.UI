@@ -50,8 +50,6 @@ namespace PofyTools
                 this.EnableElements();
                 this.canvasGroup.alpha = 1f;
                 this._isOpen = true;
-
-
             }
         }
 
