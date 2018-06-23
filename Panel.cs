@@ -9,10 +9,11 @@ namespace PofyTools
     public class Panel : StateableActor, IToggleable, IBackButtonListener
     {
         #region Variables
-
-        public CanvasGroup canvasGroup;
+        [SerializeField]
+        protected CanvasGroup _canvasGroup;
         protected List<Selectable> _selectebles = new List<Selectable>();
-        public bool closeOnSubscribe = false;
+        [SerializeField]
+        protected bool _closeOnSubscribe = false;
 
         #endregion
 
@@ -29,7 +30,7 @@ namespace PofyTools
 
         protected bool _isOpen;
 
-        public bool isOpen
+        public virtual bool IsOpen
         {
             get { return this._isOpen; }
         }
@@ -42,42 +43,36 @@ namespace PofyTools
                 Open();
         }
 
-        public virtual void Open()
+        public virtual void Toggle(bool on)
         {
-            if (!this._isOpen)
-            {
-                this.gameObject.SetActive(true);
-                this.EnableElements();
-                this.canvasGroup.alpha = 1f;
-                this._isOpen = true;
-            }
+            if (on)
+                Open();
+            else
+                Close();
         }
 
-        //        public virtual void ForceClose()
-        //        {
-        //            this.DisableElements();
-        //            this._isOpen = false;
-        //            this.canvasGroup.alpha = 0f;
-        //            this.gameObject.SetActive(false);
-        //        }
-        //
-        //        public virtual void ForceOpen()
-        //        {
-        //            this.EnableElements();
-        //            this._isOpen = true;
-        //            this.canvasGroup.alpha = 1f;
-        //            this.gameObject.SetActive(true);
-        //        }
+        public virtual void Open()
+        {
+            //if (!this._isOpen)
+            //{
+            this.gameObject.SetActive(true);
+            this.EnableElements();
+            this._canvasGroup.alpha = 1f;
+
+            this._isOpen = true;
+            //}
+        }
 
         public virtual void Close()
         {
-            if (this._isOpen)
-            {
-                this.DisableElements();
-                this._isOpen = false;
-                this.canvasGroup.alpha = 0f;
-                this.gameObject.SetActive(false);
-            }
+            //if (this._isOpen)
+            //{
+            this.DisableElements();
+            this._canvasGroup.alpha = 0f;
+            this.gameObject.SetActive(false);
+
+            this._isOpen = false;
+            //}
         }
 
         public virtual void EnableElements()
@@ -109,9 +104,9 @@ namespace PofyTools
         {
             if (base.Initialize())
             {
-                if (!this.canvasGroup)
-                    this.canvasGroup = GetComponent<CanvasGroup>();
-                
+                if (!this._canvasGroup)
+                    this._canvasGroup = GetComponent<CanvasGroup>();
+
                 OnTransformChildrenChanged();
                 return true;
             }
@@ -127,8 +122,9 @@ namespace PofyTools
             if (base.Subscribe())
             {
                 //
-                if (this.closeOnSubscribe)
+                if (this._closeOnSubscribe)
                 {
+                    this._isOpen = true;
                     Close();
                 }
                 return true;
@@ -147,5 +143,102 @@ namespace PofyTools
         }
 
         #endregion
+
+        #region API
+
+        public void FadeOut(float duration = 1f)
+        {
+            //Open();
+            this._canvasGroup.alpha = 1f;
+            AddState(this._fadeState.Set(Mathf.Abs(duration) * -1));
+            this._isOpen = false;
+        }
+
+        public void FadeIn(float duration = 1f)
+        {
+            Open();
+            AddState(this._fadeState.Set(Mathf.Abs(duration)));
+        }
+
+        #endregion
+
+        #region Callbacks
+
+        protected void FadeStart()
+        {
+            //Debug.Log (TAG + "FadeStart");
+        }
+
+        protected void FadeComplete(int direction)
+        {
+            if (direction < 0)
+                Close();
+            //Debug.Log (TAG + "FadeComplete");
+        }
+
+        #endregion
+
+        #region IStateable
+        protected FadeState _fadeState;
+
+        public override void ConstructAvailableStates()
+        {
+            base.ConstructAvailableStates();
+            this._fadeState = new FadeState(this, 1f);
+        }
+
+        public class FadeState : TimedStateObject<Panel>//TODO: Make all panels IFadeable
+        {
+            private int _direction = 1;
+            public FadeState(Panel controlledObject, float duration) : base(controlledObject, duration)
+            {
+            }
+            public override void InitializeState()
+            {
+                base.InitializeState();
+
+                this.ignoreStacking = true;
+                this.isPermanent = false;
+
+            }
+            public FadeState Set(float duration)
+            {
+                //Debug.Log (TAG + "Set " + duration);
+                this._direction = (duration > 0) ? 1 : -1;
+                this._timeRange.max = Mathf.Abs(duration);
+                return this;
+            }
+
+            public override void EnterState()
+            {
+                // Debug.Log (TAG + "EnterState");
+                base.EnterState();
+                this._timeRange.current = (this._direction > 0) ? this._timeRange.min : this._timeRange.max;
+                this.controlledObject.FadeStart();
+            }
+
+            public override bool LateUpdateState()
+            {
+                var deltaTime = Time.unscaledDeltaTime * this._direction;
+                //Debug.Log (TAG + "deltaTime is " + deltaTime);
+
+                this._timeRange.current += deltaTime;
+
+                this.controlledObject._canvasGroup.alpha = this._timeRange.CurrentToMaxRatio;
+
+                if (this._direction > 0 && this._timeRange.AtMax || this._direction < 0 && this._timeRange.AtMin)
+                    return true;
+
+                return false;
+            }
+
+            public override void ExitState()
+            {
+                this.controlledObject.FadeComplete(this._direction);
+                base.ExitState();
+            }
+        }
+        #endregion
+
     }
 }

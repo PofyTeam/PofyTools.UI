@@ -18,7 +18,7 @@
         private static NotificationView _instance = null;
 
         public float duration = 3;
-        [Header ("UI Components")]
+        [Header("UI Components")]
         public Text message;
         public Image icon;
         public Image progress;
@@ -31,21 +31,104 @@
         public float _progressTarget = 0;
         private Package _currentPackage;
 
-        #region API
-        public void Notify (Package package)
+        #region IInitializable
+
+        public override bool Initialize()
         {
+            //Debug.Log (TAG + "Initialize");
+            if (base.Initialize())
+            {
+                if (_instance == null)
+                {
+                    _instance = this;
+                    DontDestroyOnLoad(this.gameObject);
+                }
+                else if (_instance != this)
+                {
+                    Debug.LogWarning(TAG + "Instance already created. Aborting...");
+                    Destroy(this.gameObject);
+                    return false;
+                }
+
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region ISubscribable
+
+        public override bool Subscribe()
+        {
+            if (base.Subscribe())
+            {
+                //if (_instance != null)
+                //    Debug.LogWarning(TAG + "Singleton already exists! Overwritting...");
+                //_instance = this;
+
+                CheckQueue();
+                return true;
+            }
+            return false;
+        }
+
+        public override bool Unsubscribe()
+        {
+            if (base.Unsubscribe())
+            {
+                if (_instance == this)
+                    _instance = null;
+
+                return true;
+            }
+            return false;
+        }
+
+        #endregion
+
+        #region IToggleable
+
+        public override void Close()
+        {
+            this.state = State.Inactive;
+            //this.backShine.gameObject.SetActive (false);
+            base.Close();
+
+            CheckQueue();
+        }
+
+        public override void Open()
+        {
+            base.Open();
+
+            //Color color = Color.white;
+            //color.a = 0.25f;
+            //this.backShine.color = color;
+            //this.backShine.gameObject.SetActive (true);
+            AddState(this.notifyState);
+        }
+
+        #endregion
+
+        #region API
+        public void Notify(Package package)
+        {
+#if UNITY_EDITOR
+            Debug.Log(TAG + package.message);
+#endif
             if (this.state == State.Inactive)
             {
                 this._currentPackage = package;
 
-                this.message.gameObject.SetActive (false);
-                this.progressFrame.gameObject.SetActive (false);
+                this.message.gameObject.SetActive(false);
+                this.progressFrame.gameObject.SetActive(false);
                 this.animateProgress = false;
 
                 //message
-                if (!string.IsNullOrEmpty (package.message))
+                if (!string.IsNullOrEmpty(package.message))
                 {
-                    this.message.gameObject.SetActive (true);
+                    this.message.gameObject.SetActive(true);
                     this.message.text = package.message;
                 }
 
@@ -64,132 +147,79 @@
                 if (package.progress > 0)
                 {
 
-                    this.progressFrame.gameObject.SetActive (true);
+                    this.progressFrame.gameObject.SetActive(true);
                     this.progress.fillAmount = package.progress;
                     //if (package.progress < 1)
                     //    this.icon.material = UIResourceManager.Resources.inactiveMaterial;
                 }
                 else if (package.progress < 0)
                 {
-                    this.progressFrame.gameObject.SetActive (true);
+                    this.progressFrame.gameObject.SetActive(true);
                     this.animateProgress = true;
                     this.progress.fillAmount = 0;
                     this._progressTarget = -package.progress;
                 }
 
-                Open ();
+                //Open ();
+                FadeIn();
             }
             else
             {
-                if (package.Equals (this._currentPackage))
+                if (package.Equals(this._currentPackage))
                     return;
 
                 int queueSize = _queue.Count;
-                if (queueSize > 0 && package.Equals (_queue[queueSize - 1]))
+                if (queueSize > 0 && package.Equals(_queue[queueSize - 1]))
                 {
                     return;
                 }
 
-                AddToQueue (package);
+                AddToQueue(package);
             }
-        }
-
-        #endregion
-
-        #region IToggleable
-
-        public override void Close ()
-        {
-            this.state = State.Inactive;
-            //this.backShine.gameObject.SetActive (false);
-            base.Close ();
-
-            CheckQueue ();
-        }
-
-        public override void Open ()
-        {
-            base.Open ();
-
-            //Color color = Color.white;
-            //color.a = 0.25f;
-            //this.backShine.color = color;
-            //this.backShine.gameObject.SetActive (true);
-            AddState (this.notifyState);
         }
 
         #endregion
 
         #region Static API
-        private static List<Package> _queue = new List<Package> ();
+        private static List<Package> _queue = new List<Package>();
 
-        public static void Show (Package notificationPackage)
+        public static void Show(Package notificationPackage)
         {
             if (NotificationView._instance != null)
-                NotificationView._instance.Notify (notificationPackage);
+                NotificationView._instance.Notify(notificationPackage);
             else
-                NotificationView.AddToQueue (notificationPackage);
+                NotificationView.AddToQueue(notificationPackage);
 
         }
 
-        public static void Show (string message, Sprite icon, float progress)
+        public static void Show(string message, Sprite icon, float progress)
         {
-            NotificationView.Show (new Package (message, icon, progress));
+            NotificationView.Show(new Package(message, icon, progress));
         }
 
-        public static void Hide ()
+        public static void Hide()
         {
             if (NotificationView._instance != null)
-                NotificationView._instance.Close ();
+                NotificationView._instance.Close();
         }
 
-        private static void AddToQueue (Package packageToQueue)
+        private static void AddToQueue(Package packageToQueue)
         {
-            if (!_queue.Contains (packageToQueue))
+            if (!_queue.Contains(packageToQueue))
             {
-                _queue.Add (packageToQueue);
+                _queue.Add(packageToQueue);
             }
         }
 
-        private static void CheckQueue ()
+        private static void CheckQueue()
         {
             if (_queue.Count > 0)
             {
                 Package next = _queue[0];
-                _queue.RemoveAt (0);
-                Show (next);
+                _queue.RemoveAt(0);
+                Show(next);
             }
         }
-        #endregion
-
-        #region ISubscribable
-
-        public override bool Subscribe ()
-        {
-            if (base.Subscribe ())
-            {
-                if (_instance != null)
-                    Debug.LogWarning (TAG + "Singleton already exists! Overwritting...");
-                _instance = this;
-
-                CheckQueue ();
-                return true;
-            }
-            return false;
-        }
-
-        public override bool Unsubscribe ()
-        {
-            if (base.Unsubscribe ())
-            {
-                if (_instance == this)
-                    _instance = null;
-
-                return true;
-            }
-            return false;
-        }
-
         #endregion
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
@@ -200,19 +230,19 @@
             public Sprite icon = null;
             public float progress = 0f;
 
-            public Package ()
+            public Package()
             {
 
             }
 
-            public Package (string message, Sprite icon, float progress)
+            public Package(string message, Sprite icon, float progress)
             {
                 this.message = message;
                 this.icon = icon;
                 this.progress = progress;
             }
 
-            public override bool Equals (object obj)
+            public override bool Equals(object obj)
             {
                 Package other = (Package)obj;
                 if (other != null)
@@ -223,14 +253,15 @@
             }
         }
 
-        public override void InitializeStateStack ()
-        {
-            this._stateStack = new List<IState> (1);
-        }
+        //public override void InitializeStateStack()
+        //{
+        //    this._stateStack = new List<IState>(1);
+        //}
 
-        public override void ConstructAvailableStates ()
+        public override void ConstructAvailableStates()
         {
-            this.notifyState = new NotifyState (this);
+            base.ConstructAvailableStates();
+            this.notifyState = new NotifyState(this);
         }
     }
 
@@ -238,23 +269,23 @@
     {
         private float _timer, _duration;
 
-        public NotifyState ()
+        public NotifyState()
         {
-            InitializeState ();
+            InitializeState();
         }
 
-        public NotifyState (NotificationView co)
+        public NotifyState(NotificationView co)
         {
             this.controlledObject = co;
-            InitializeState ();
+            InitializeState();
         }
 
-        public override void InitializeState ()
+        public override void InitializeState()
         {
             this.hasUpdate = true;
         }
 
-        public override void EnterState ()
+        public override void EnterState()
         {
             //        Debug.LogError("Entering...");
             this.controlledObject.state = NotificationView.State.Active;
@@ -262,7 +293,7 @@
             this._timer = this._duration;
         }
 
-        public override bool UpdateState ()
+        public override bool UpdateState()
         {
             this._timer -= Time.unscaledDeltaTime;
 
@@ -271,7 +302,7 @@
             if (this.controlledObject.animateProgress)
             {
                 float normalizedTime = 1 - this._timer / this._duration;
-                this.controlledObject.progress.fillAmount = Mathf.Lerp (0, this.controlledObject._progressTarget, normalizedTime * 1.33f);
+                this.controlledObject.progress.fillAmount = Mathf.Lerp(0, this.controlledObject._progressTarget, normalizedTime * 1.33f);
             }
 
             if (this._timer <= 0)
@@ -280,10 +311,11 @@
             return false;
         }
 
-        public override void ExitState ()
+        public override void ExitState()
         {
             //        Debug.LogError("Exiting");
-            this.controlledObject.Close ();
+            //this.controlledObject.Close();
+            this.controlledObject.FadeOut();
         }
     }
 

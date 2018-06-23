@@ -6,13 +6,14 @@
 
     public class HUDButtonView : EventTriggerView
     {
+        [SerializeField]
         protected Transform _visual;
 
         public Transform visual
         {
             get{ return this._visual; }
         }
-
+        [SerializeField]
         protected Image _icon;
 
         public Image icon{ get { return this._icon; } }
@@ -23,8 +24,8 @@
         {
             base.Awake();
             this._selfTransform = this.transform;
-            this._visual = this._selfTransform.Find("Visual");
-            this._icon = this._visual.GetComponent<Image>();
+            //this._visual = this._selfTransform.Find("Visual");
+            //this._icon = this._visual.GetComponent<Image>();
         }
 
         #endregion

@@ -39,6 +39,8 @@
             this._fill.fillAmount = progress;
         }
 
+        public void OnLoadStart () { }
+        public void OnLoadComplete () { }
         #endregion
 
         #region ISubscribable implementation

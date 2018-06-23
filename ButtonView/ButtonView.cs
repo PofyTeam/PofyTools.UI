@@ -7,8 +7,11 @@ namespace PofyTools
     [RequireComponent(typeof(Button))]
     public abstract class ButtonView : StateableActor
     {
+        [SerializeField]
         protected Button _button;
+        [SerializeField]
         protected Image icon;
+        [SerializeField]
         protected Text _label;
 
         protected abstract void OnClick();
@@ -43,8 +46,10 @@ namespace PofyTools
         {
             if (base.Initialize())
             {
-                this._button = GetComponent<Button>();
-                this._label = GetComponentInChildren<Text>();
+                if (!this._button)
+                    this._button = GetComponent<Button>();
+                //if (!this._label)
+                //    this._label = GetComponentInChildren<Text>();
 
                 return true;
             }

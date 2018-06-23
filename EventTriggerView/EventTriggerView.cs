@@ -4,6 +4,7 @@
     using System.Collections;
     using UnityEngine.UI;
     using UnityEngine.EventSystems;
+    using Extensions;
 
     [RequireComponent(typeof(EventTrigger))]
     public class EventTriggerView : StateableActor
