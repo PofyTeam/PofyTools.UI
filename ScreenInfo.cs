@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using PofyTools;
 using PofyTools.Pool;
+using UnityEngine.UI;
 
-namespace UnityEngine.UI
+namespace PofyTools.UI
 {
 
     public class ScreenInfo : StateableActor, IPoolable<ScreenInfo>
@@ -27,24 +28,24 @@ namespace UnityEngine.UI
             set { this._target = value; }
         }
 
-        protected override void Awake ()
+        protected override void Awake()
         {
-            base.Awake ();
+            base.Awake();
             this.removeAllStatesOnStart = false;
         }
 
         #region IPoolable implementation
 
-        public void Free ()
+        public void Free()
         {
-            RemoveAllStates (false);
-            this._pool.Free (this);
+            RemoveAllStates(false);
+            this._pool.Free(this);
         }
 
-        public void ResetFromPool ()
+        public void ResetFromPool()
         {
-            this.gameObject.SetActive (true);
-            AddState (this.flowState);
+            this.gameObject.SetActive(true);
+            AddState(this.flowState);
         }
 
         public Pool<ScreenInfo> pool
@@ -77,14 +78,14 @@ namespace UnityEngine.UI
 
         private InfoFlowState flowState;
 
-        public override void ConstructAvailableStates ()
+        public override void ConstructAvailableStates()
         {
-            this.flowState = new InfoFlowState (this);
+            this.flowState = new InfoFlowState(this);
         }
 
-        public override void InitializeStateStack ()
+        public override void InitializeStateStack()
         {
-            this._stateStack = new List<IState> (1);
+            this._stateStack = new List<IState>(1);
         }
 
         #endregion
@@ -96,23 +97,23 @@ namespace UnityEngine.UI
         private float _timer;
         private float countMultiplier;
 
-        public InfoFlowState ()
+        public InfoFlowState()
         {
-            InitializeState ();
+            InitializeState();
         }
 
-        public InfoFlowState (ScreenInfo co)
+        public InfoFlowState(ScreenInfo co)
         {
             this.controlledObject = co;
-            InitializeState ();
+            InitializeState();
         }
 
-        public override void InitializeState ()
+        public override void InitializeState()
         {
             this.hasUpdate = true;
         }
 
-        public override void EnterState ()
+        public override void EnterState()
         {
             if (this.controlledObject.target != null)
                 this.controlledObject.selfTransform.position = this.controlledObject.target.transform.position + this.controlledObject.offset;
@@ -120,29 +121,29 @@ namespace UnityEngine.UI
                 this.controlledObject.selfTransform.position = this.controlledObject.offset;
 
             this._timer = this.controlledObject.duration;
-            this.controlledObject.selfTransform.localRotation = Quaternion.Euler (Vector3.forward * Random.Range (-30, 30));
-            this.controlledObject.selfTransform.Translate (this.controlledObject.speed * Vector3.up, Space.Self);
+            this.controlledObject.selfTransform.localRotation = Quaternion.Euler(Vector3.forward * Random.Range(-30, 30));
+            this.controlledObject.selfTransform.Translate(this.controlledObject.speed * Vector3.up, Space.Self);
             this.countMultiplier = this.controlledObject.pool.Count * 0.33f;
 
         }
 
-        public override bool UpdateState ()
+        public override bool UpdateState()
         {
             this._timer -= Time.smoothDeltaTime;
             if (this._timer < 0)
                 this._timer = 0;
-            float normalizedTime = this.controlledObject.alphaCurve.Evaluate (1 - this._timer / this.controlledObject.duration);
+            float normalizedTime = this.controlledObject.alphaCurve.Evaluate(1 - this._timer / this.controlledObject.duration);
             this.controlledObject.canvasGroup.alpha = normalizedTime;
             this.controlledObject.selfTransform.localScale = normalizedTime * Vector3.one * this.countMultiplier;
-            this.controlledObject.selfTransform.Translate (this.controlledObject.speed * Time.smoothDeltaTime * Vector3.up, Space.Self);
+            this.controlledObject.selfTransform.Translate(this.controlledObject.speed * Time.smoothDeltaTime * Vector3.up, Space.Self);
             if (this._timer <= 0)
                 return true;
             return false;
         }
 
-        public override void ExitState ()
+        public override void ExitState()
         {
-            this.controlledObject.Free ();
+            this.controlledObject.Free();
         }
 
     }
