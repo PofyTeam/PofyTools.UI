@@ -14,17 +14,17 @@
 
         public bool Initialize()
         {
-            if (!this.isInitialized)
+            if (!this.IsInitialized)
             {
                 this._fill = GetComponent<Image>();
-                this.isInitialized = true;
+                this.IsInitialized = true;
                 return true;
             }
             return false;
         }
 
 
-        public bool isInitialized
+        public bool IsInitialized
         {
             get;
             protected set;
@@ -47,10 +47,10 @@
 
         public bool Subscribe()
         {
-            if (!this.isSubscribed)
+            if (!this.IsSubscribed)
             {
                 LevelLoader.AddLoadProgressListener(this);
-                this.isSubscribed = true;
+                this.IsSubscribed = true;
                 return true;
             }
             return false;
@@ -58,16 +58,16 @@
 
         public bool Unsubscribe()
         {
-            if (this.isSubscribed)
+            if (this.IsSubscribed)
             {
                 LevelLoader.RemoveLoadProgressListener(this);
-                this.isSubscribed = false;
+                this.IsSubscribed = false;
                 return true;
             }
             return false;
         }
 
-        public bool isSubscribed
+        public bool IsSubscribed
         {
             get;
             protected set;

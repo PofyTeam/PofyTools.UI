@@ -104,26 +104,26 @@ namespace PofyTools.UI
 
         public InfoFlowState(ScreenInfo co)
         {
-            this.controlledObject = co;
+            this.ControlledObject = co;
             InitializeState();
         }
 
         public override void InitializeState()
         {
-            this.hasUpdate = true;
+            this.HasUpdate = true;
         }
 
         public override void EnterState()
         {
-            if (this.controlledObject.target != null)
-                this.controlledObject.selfTransform.position = this.controlledObject.target.transform.position + this.controlledObject.offset;
+            if (this.ControlledObject.target != null)
+                this.ControlledObject.SelfTransform.position = this.ControlledObject.target.transform.position + this.ControlledObject.offset;
             else
-                this.controlledObject.selfTransform.position = this.controlledObject.offset;
+                this.ControlledObject.SelfTransform.position = this.ControlledObject.offset;
 
-            this._timer = this.controlledObject.duration;
-            this.controlledObject.selfTransform.localRotation = Quaternion.Euler(Vector3.forward * Random.Range(-30, 30));
-            this.controlledObject.selfTransform.Translate(this.controlledObject.speed * Vector3.up, Space.Self);
-            this.countMultiplier = this.controlledObject.pool.Count * 0.33f;
+            this._timer = this.ControlledObject.duration;
+            this.ControlledObject.SelfTransform.localRotation = Quaternion.Euler(Vector3.forward * Random.Range(-30, 30));
+            this.ControlledObject.SelfTransform.Translate(this.ControlledObject.speed * Vector3.up, Space.Self);
+            this.countMultiplier = this.ControlledObject.pool.Count * 0.33f;
 
         }
 
@@ -132,10 +132,10 @@ namespace PofyTools.UI
             this._timer -= Time.smoothDeltaTime;
             if (this._timer < 0)
                 this._timer = 0;
-            float normalizedTime = this.controlledObject.alphaCurve.Evaluate(1 - this._timer / this.controlledObject.duration);
-            this.controlledObject.canvasGroup.alpha = normalizedTime;
-            this.controlledObject.selfTransform.localScale = normalizedTime * Vector3.one * this.countMultiplier;
-            this.controlledObject.selfTransform.Translate(this.controlledObject.speed * Time.smoothDeltaTime * Vector3.up, Space.Self);
+            float normalizedTime = this.ControlledObject.alphaCurve.Evaluate(1 - this._timer / this.ControlledObject.duration);
+            this.ControlledObject.canvasGroup.alpha = normalizedTime;
+            this.ControlledObject.SelfTransform.localScale = normalizedTime * Vector3.one * this.countMultiplier;
+            this.ControlledObject.SelfTransform.Translate(this.ControlledObject.speed * Time.smoothDeltaTime * Vector3.up, Space.Self);
             if (this._timer <= 0)
                 return true;
             return false;
@@ -143,7 +143,7 @@ namespace PofyTools.UI
 
         public override void ExitState()
         {
-            this.controlledObject.Free();
+            this.ControlledObject.Free();
         }
 
     }

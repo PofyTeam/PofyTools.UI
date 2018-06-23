@@ -197,8 +197,8 @@ namespace PofyTools
             {
                 base.InitializeState();
 
-                this.ignoreStacking = true;
-                this.isPermanent = false;
+                this.IgnoreStacking = true;
+                this.IsPermanent = false;
 
             }
             public FadeState Set(float duration)
@@ -213,8 +213,8 @@ namespace PofyTools
             {
                 // Debug.Log (TAG + "EnterState");
                 base.EnterState();
-                this._timeRange.current = (this._direction > 0) ? this._timeRange.min : this._timeRange.max;
-                this.controlledObject.FadeStart();
+                this._timeRange.Current = (this._direction > 0) ? this._timeRange.min : this._timeRange.max;
+                this.ControlledObject.FadeStart();
             }
 
             public override bool LateUpdateState()
@@ -222,9 +222,9 @@ namespace PofyTools
                 var deltaTime = Time.unscaledDeltaTime * this._direction;
                 //Debug.Log (TAG + "deltaTime is " + deltaTime);
 
-                this._timeRange.current += deltaTime;
+                this._timeRange.Current += deltaTime;
 
-                this.controlledObject._canvasGroup.alpha = this._timeRange.CurrentToMaxRatio;
+                this.ControlledObject._canvasGroup.alpha = this._timeRange.CurrentToMaxRatio;
 
                 if (this._direction > 0 && this._timeRange.AtMax || this._direction < 0 && this._timeRange.AtMin)
                     return true;
@@ -234,7 +234,7 @@ namespace PofyTools
 
             public override void ExitState()
             {
-                this.controlledObject.FadeComplete(this._direction);
+                this.ControlledObject.FadeComplete(this._direction);
                 base.ExitState();
             }
         }

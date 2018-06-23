@@ -90,17 +90,17 @@
 
         public HUDButtonScaleState(HUDButtonView controlledObject)
         {
-            this.controlledObject = controlledObject;
+            this.ControlledObject = controlledObject;
             InitializeState();
         }
 
         public override void EnterState()
         {
-            this.duration = this.controlledObject.scaleDuration;
+            this.duration = this.ControlledObject.scaleDuration;
             this._timer = this.duration;
 
-            this._startFactor = this.controlledObject.visual.localScale[0];
-            this._targetFactor = (this.scaleIn) ? this.controlledObject.minScale : this.controlledObject.maxScale;
+            this._startFactor = this.ControlledObject.visual.localScale[0];
+            this._targetFactor = (this.scaleIn) ? this.ControlledObject.minScale : this.ControlledObject.maxScale;
         }
 
         public override bool UpdateState()
@@ -110,10 +110,10 @@
                 this._timer = 0;
 
             float normalizedTime = 1 - this._timer / this.duration;
-            float mappedTime = this.controlledObject.scaleCurve.Evaluate(normalizedTime);
+            float mappedTime = this.ControlledObject.scaleCurve.Evaluate(normalizedTime);
             float factor = Mathf.LerpUnclamped(this._startFactor, this._targetFactor, mappedTime);
 
-            this.controlledObject.visual.localScale = Vector3.one * factor;
+            this.ControlledObject.visual.localScale = Vector3.one * factor;
 
             if (this._timer <= 0)
                 return true;
@@ -130,14 +130,14 @@
 
         public HUDButtonPulseState()
         {
-            this.hasUpdate = true;
+            this.HasUpdate = true;
             InitializeState();
         }
 
         public HUDButtonPulseState(HUDButtonView controlledObject, AnimationCurve curve)
         {
-            this.controlledObject = controlledObject;
-            this.hasUpdate = true;
+            this.ControlledObject = controlledObject;
+            this.HasUpdate = true;
             this.curve = curve;
             InitializeState();
         }
@@ -145,7 +145,7 @@
         public override void EnterState()
         {
             this._timer = this.duration;
-            this.controlledObject.visual.localScale = Vector3.one;
+            this.ControlledObject.visual.localScale = Vector3.one;
         }
 
         public override bool UpdateState()
@@ -155,7 +155,7 @@
                 this._timer = 0;
             float normalizedTime = 1 - this._timer / this.duration;
             float newScale = this.curve.Evaluate(normalizedTime) * this.maxScale;
-            this.controlledObject.visual.localScale = Vector3.one * (1 + newScale);
+            this.ControlledObject.visual.localScale = Vector3.one * (1 + newScale);
 
             if (this._timer <= 0)
                 return true;
@@ -164,7 +164,7 @@
 
         public override void ExitState()
         {
-            this.controlledObject.visual.localScale = Vector3.one;
+            this.ControlledObject.visual.localScale = Vector3.one;
         }
     }
 }

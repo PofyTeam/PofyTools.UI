@@ -10,7 +10,8 @@
     {
         public const string TAG = "<color=green><b>DialogView: </b></color>";
         private static DialogView _instance = null;
-        public static bool IsInitialized
+
+        public static bool Initialized
         {
             get { return _instance != null; }
         }
