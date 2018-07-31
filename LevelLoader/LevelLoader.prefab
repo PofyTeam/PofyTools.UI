@@ -49,7 +49,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1008830134131208
 GameObject:
   m_ObjectHideFlags: 1
@@ -683,6 +683,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   removeAllStatesOnStart: 1
   _canvasGroup: {fileID: 225259717101631638}
+  _firstSelectable: {fileID: 0}
   _closeOnSubscribe: 0
 --- !u!114 &114000013376006670
 MonoBehaviour:
@@ -697,6 +698,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   removeAllStatesOnStart: 1
   _canvasGroup: {fileID: 225667204951203636}
+  _firstSelectable: {fileID: 0}
   _closeOnSubscribe: 0
   toLoad: Menu
 --- !u!114 &114000013842498916

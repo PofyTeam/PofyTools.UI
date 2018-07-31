@@ -10,8 +10,7 @@
     {
         public const string TAG = "<color=green><b>DialogView: </b></color>";
         private static DialogView _instance = null;
-
-        public static bool Initialized
+        public static bool IsInitialized
         {
             get { return _instance != null; }
         }
@@ -29,6 +28,7 @@
         public Text message;
         public Text confirmButtonText;
         public VoidDelegate confirmer;
+        public VoidDelegate canceler;
         public Button cancel, confirm;
         #endregion
 
@@ -37,9 +37,9 @@
         {
             get { return _instance._isOpen; }
         }
-        public static void Show(string message, Type type, Selectable focusOnCancel = null, VoidDelegate onConfirm = null)
+        public static void Show(string message, Type type, Selectable focusOnCancel = null, VoidDelegate onConfirm = null, VoidDelegate onCancel = null)
         {
-            DialogView._instance.ShowDialog(message, type, focusOnCancel, onConfirm);
+            DialogView._instance.ShowDialog(message, type, focusOnCancel, onConfirm, onCancel);
         }
 
         public static void Hide()
@@ -48,7 +48,7 @@
             _instance.FadeOut(0.3f);
         }
 
-        public void ShowDialog(string message, Type type, Selectable focusOnCancel, VoidDelegate onConfirm = null)
+        public void ShowDialog(string message, Type type, Selectable focusOnCancel, VoidDelegate onConfirm = null, VoidDelegate onCancel = null)
         {
             this.message.text = message;
             this.confirmer = this.Close;
@@ -69,6 +69,7 @@
             {
                 this.cancel.gameObject.SetActive(true);
                 this.confirm.gameObject.SetActive(true);
+                canceler += onCancel;
                 this.confirmer += onConfirm;
             }
 
@@ -159,7 +160,15 @@
         public override void Close()
         {
             Debug.Log(TAG + "Close");
-
+            
+            if(canceler != null)
+            {
+                canceler();
+                var listeners = canceler.GetInvocationList();            
+                foreach (var listener in listeners)            
+                    canceler -= listener as VoidDelegate; // remove all listener, to prevent showing multiple screens after cancel on quit
+            }
+            
             base.Close();
             if (this._selectOnClose)
             {
@@ -187,6 +196,6 @@
         private void OnConfirm()
         {
             this.confirmer();
-        }
+        }        
     }
 }

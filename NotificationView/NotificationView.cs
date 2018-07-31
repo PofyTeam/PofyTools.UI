@@ -136,22 +136,21 @@
                 if (package.icon != null)
                 {
                     this.icon.sprite = package.icon;
-                    this.icon.material = null;
+                    this.icon.gameObject.SetActive(true);
                 }
                 else
                 {
-                    //this.icon.sprite = UIResourceManager.Resources.locations["button_location"];
+                    this.icon.gameObject.SetActive(false);
                 }
 
-                //
+                //progress static
                 if (package.progress > 0)
                 {
 
                     this.progressFrame.gameObject.SetActive(true);
                     this.progress.fillAmount = package.progress;
-                    //if (package.progress < 1)
-                    //    this.icon.material = UIResourceManager.Resources.inactiveMaterial;
                 }
+                //progress animated
                 else if (package.progress < 0)
                 {
                     this.progressFrame.gameObject.SetActive(true);
@@ -160,7 +159,6 @@
                     this._progressTarget = -package.progress;
                 }
 
-                //Open ();
                 FadeIn();
             }
             else
@@ -220,6 +218,11 @@
                 Show(next);
             }
         }
+
+        public static void UnqueueAll()
+        {
+            _queue.Clear();
+        }
         #endregion
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
@@ -276,20 +279,20 @@
 
         public NotifyState(NotificationView co)
         {
-            this.ControlledObject = co;
+            this.controlledObject = co;
             InitializeState();
         }
 
         public override void InitializeState()
         {
-            this.HasUpdate = true;
+            this.hasUpdate = true;
         }
 
         public override void EnterState()
         {
             //        Debug.LogError("Entering...");
-            this.ControlledObject.state = NotificationView.State.Active;
-            this._duration = this.ControlledObject.duration;
+            this.controlledObject.state = NotificationView.State.Active;
+            this._duration = this.controlledObject.duration;
             this._timer = this._duration;
         }
 
@@ -299,10 +302,10 @@
 
             if (this._timer < 0)
                 this._timer = 0;
-            if (this.ControlledObject.animateProgress)
+            if (this.controlledObject.animateProgress)
             {
                 float normalizedTime = 1 - this._timer / this._duration;
-                this.ControlledObject.progress.fillAmount = Mathf.Lerp(0, this.ControlledObject._progressTarget, normalizedTime * 1.33f);
+                this.controlledObject.progress.fillAmount = Mathf.Lerp(0, this.controlledObject._progressTarget, normalizedTime * 1.33f);
             }
 
             if (this._timer <= 0)
@@ -315,7 +318,7 @@
         {
             //        Debug.LogError("Exiting");
             //this.controlledObject.Close();
-            this.ControlledObject.FadeOut();
+            this.controlledObject.FadeOut();
         }
     }
 
