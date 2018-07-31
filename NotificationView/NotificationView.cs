@@ -279,20 +279,20 @@
 
         public NotifyState(NotificationView co)
         {
-            this.controlledObject = co;
+            this.ControlledObject = co;
             InitializeState();
         }
 
         public override void InitializeState()
         {
-            this.hasUpdate = true;
+            this.HasUpdate = true;
         }
 
         public override void EnterState()
         {
             //        Debug.LogError("Entering...");
-            this.controlledObject.state = NotificationView.State.Active;
-            this._duration = this.controlledObject.duration;
+            this[0].state = NotificationView.State.Active;
+            this._duration = this[0].duration;
             this._timer = this._duration;
         }
 
@@ -302,10 +302,10 @@
 
             if (this._timer < 0)
                 this._timer = 0;
-            if (this.controlledObject.animateProgress)
+            if (this[0].animateProgress)
             {
                 float normalizedTime = 1 - this._timer / this._duration;
-                this.controlledObject.progress.fillAmount = Mathf.Lerp(0, this.controlledObject._progressTarget, normalizedTime * 1.33f);
+                this[0].progress.fillAmount = Mathf.Lerp(0, this[0]._progressTarget, normalizedTime * 1.33f);
             }
 
             if (this._timer <= 0)
@@ -316,9 +316,7 @@
 
         public override void ExitState()
         {
-            //        Debug.LogError("Exiting");
-            //this.controlledObject.Close();
-            this.controlledObject.FadeOut();
+            this[0].FadeOut();
         }
     }
 
