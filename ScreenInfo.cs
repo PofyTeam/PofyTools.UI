@@ -5,6 +5,7 @@ using UnityEngine;
 using PofyTools;
 using PofyTools.Pool;
 using UnityEngine.UI;
+using TMPro;
 
 namespace PofyTools.UI
 {
@@ -13,7 +14,19 @@ namespace PofyTools.UI
     {
         private Pool<ScreenInfo> _pool;
         public CanvasGroup canvasGroup;
-        public Text message;
+        public TextMeshProUGUI message;
+        public float size = 1;
+        public Color FillColor
+        {
+            get { return this.message.color; }
+            set { this.message.color = value; }
+        }
+
+        public Color OutlineColor
+        {
+            get { return this.message.outlineColor; }
+            set { this.message.outlineColor = value; }
+        }
 
         public AnimationCurve alphaCurve;
         public bool follow;
@@ -48,7 +61,7 @@ namespace PofyTools.UI
             AddState(this.flowState);
         }
 
-        public Pool<ScreenInfo> pool
+        public Pool<ScreenInfo> Pool
         {
             get
             {
@@ -115,15 +128,15 @@ namespace PofyTools.UI
 
         public override void EnterState()
         {
-            if (this.ControlledObject.target != null)
-                this.ControlledObject.SelfTransform.position = this.ControlledObject.target.transform.position + this.ControlledObject.offset;
+            if (this[0].target != null)
+                this[0].SelfTransform.position = this[0].target.transform.position + this[0].offset;
             else
-                this.ControlledObject.SelfTransform.position = this.ControlledObject.offset;
+                this[0].SelfTransform.position = this[0].offset;
 
-            this._timer = this.ControlledObject.duration;
-            this.ControlledObject.SelfTransform.localRotation = Quaternion.Euler(Vector3.forward * Random.Range(-30, 30));
-            this.ControlledObject.SelfTransform.Translate(this.ControlledObject.speed * Vector3.up, Space.Self);
-            this.countMultiplier = this.ControlledObject.pool.Count * 0.33f;
+            this._timer = this[0].duration;
+            this[0].SelfTransform.localRotation = Quaternion.Euler(Vector3.forward * Random.Range(-30, 30));
+            this[0].SelfTransform.Translate(this[0].speed * Vector3.up, Space.Self);
+            //this.countMultiplier = this[0].Pool.Count * 0.33f;
 
         }
 
@@ -132,10 +145,10 @@ namespace PofyTools.UI
             this._timer -= Time.smoothDeltaTime;
             if (this._timer < 0)
                 this._timer = 0;
-            float normalizedTime = this.ControlledObject.alphaCurve.Evaluate(1 - this._timer / this.ControlledObject.duration);
-            this.ControlledObject.canvasGroup.alpha = normalizedTime;
-            this.ControlledObject.SelfTransform.localScale = normalizedTime * Vector3.one * this.countMultiplier;
-            this.ControlledObject.SelfTransform.Translate(this.ControlledObject.speed * Time.smoothDeltaTime * Vector3.up, Space.Self);
+            float normalizedTime = this[0].alphaCurve.Evaluate(1 - this._timer / this[0].duration);
+            this[0].canvasGroup.alpha = normalizedTime;
+            this[0].SelfTransform.localScale = normalizedTime * Vector3.one * this[0].size;// * this.countMultiplier;
+            this[0].SelfTransform.Translate(this[0].speed * Time.smoothDeltaTime * Vector3.up, Space.Self);
             if (this._timer <= 0)
                 return true;
             return false;
@@ -143,7 +156,7 @@ namespace PofyTools.UI
 
         public override void ExitState()
         {
-            this.ControlledObject.Free();
+            this[0].Free();
         }
 
     }
