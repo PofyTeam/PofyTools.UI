@@ -6,7 +6,7 @@
     using UnityEngine.UI;
 
     [RequireComponent(typeof(Image))]
-    public class FillLoadListener : MonoBehaviour,ILoadProgressListener,IInitializable
+    public class FillLoadListener : MonoBehaviour, ILoadProgressListener, IInitializable
     {
         protected Image _fill;
 
@@ -39,8 +39,8 @@
             this._fill.fillAmount = progress;
         }
 
-        public void OnLoadStart () { }
-        public void OnLoadComplete () { }
+        public void OnLoadStart(string levelName) { }
+        public void OnLoadComplete(string levelName) { }
         #endregion
 
         #region ISubscribable implementation

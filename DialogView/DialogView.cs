@@ -11,10 +11,12 @@
     {
         public const string TAG = "<color=green><b>DialogView: </b></color>";
         private static DialogView _instance = null;
-        public static bool IsInitialized
+
+        public static bool InitDone
         {
             get { return _instance != null; }
         }
+
         /// <summary>
         /// Dialog View Type. Block = Does not have Confirm nor Cancel button, Confirm = Only has confirm button, Cacnel = Has both confirm and cancel button
         /// </summary>

@@ -19,16 +19,17 @@ namespace PofyTools.LevelLoader
 
         //Persistant singleton instance
         private static LevelLoader _instance;
+        
+        private float _offset = 0;
 
-        //public Text progress;
-        private float offset = 0;
+        private bool isTargerScene;
 
-        bool isTargerScene;
-        public string toLoad;
+        [SerializeField]
+        private string _toLoad;
 
-        bool _shouldClose = false;
+        private bool _shouldClose = false;
 
-        AsyncOperation asyncOperation = null;
+        private AsyncOperation _asyncOperation = null;
 
         #endregion
 
@@ -37,29 +38,25 @@ namespace PofyTools.LevelLoader
         protected override void Start()
         {
             base.Start();
-            //LoadCustomScene (this.toLoad);
         }
 
         #endregion
 
         #region ISubscribable
 
-        public override bool Subscribe()
-        {
-            if (base.Subscribe())
-            {
-                //SceneManager.sceneLoaded += this.OnSceneLoaded;
-                return true;
-            }
-            return false;
-        }
+        //public override bool Subscribe()
+        //{
+        //    if (base.Subscribe())
+        //    {
+        //        return true;
+        //    }
+        //    return false;
+        //}
 
         public override bool Unsubscribe()
         {
             if (base.Unsubscribe())
             {
-                //SceneManager.sceneLoaded -= this.OnSceneLoaded;
-
                 RemoveAllLoadProgressListener();
                 return true;
             }
@@ -96,16 +93,6 @@ namespace PofyTools.LevelLoader
 
         #endregion
 
-        //#region Listeners
-        //void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-        //{
-        //    if (this._shouldClose)
-        //    {
-        //        this._shouldClose = false;
-        //    }
-        //}
-        //#endregion
-
         #region Progress Listeners
 
         protected List<ILoadProgressListener> _listeners = new List<ILoadProgressListener>();
@@ -133,25 +120,25 @@ namespace PofyTools.LevelLoader
             }
         }
 
-        protected void OnLoadStart()
+        protected void OnLoadStart(string levelName)
         {
 #if UNITY_EDITOR
             Debug.Log(TAG + "OnLoadStart");
 #endif
             for (int i = this._listeners.Count - 1; i >= 0; --i)
             {
-                this._listeners[i].OnLoadStart();
+                this._listeners[i].OnLoadStart(levelName);
             }
         }
 
-        protected void OnLoadComplete()
+        protected void OnLoadComplete(string levelName)
         {
 #if UNITY_EDITOR
             Debug.Log(TAG + "OnLoadComplete");
 #endif
             for (int i = this._listeners.Count - 1; i >= 0; --i)
             {
-                this._listeners[i].OnLoadComplete();
+                this._listeners[i].OnLoadComplete(levelName);
             }
         }
 
@@ -171,12 +158,12 @@ namespace PofyTools.LevelLoader
 
                 _instance.Open();
                 Debug.Log(TAG + "Loading " + sceneName);
-                //            LevelLoader._Loader.RefreshTip();
-                _instance.toLoad = sceneName;
+
+                _instance._toLoad = sceneName;
                 Resources.UnloadUnusedAssets();
                 _instance.LoadLoaderScene();
 
-                _instance.OnLoadStart();
+                _instance.OnLoadStart(sceneName);
             }
             else
             {
@@ -189,18 +176,18 @@ namespace PofyTools.LevelLoader
         private void LoadLoaderScene()
         {
             //this.progress.text = "0%";
-            this.offset = 0;
+            this._offset = 0;
             this.isTargerScene = false;
-            this.asyncOperation = SceneManager.LoadSceneAsync("Load");
+            this._asyncOperation = SceneManager.LoadSceneAsync("Load");
             StartCoroutine(this.CheckAsyncOperationProgress());
         }
 
         private void LoadTargetScene()
         {
-            this.offset = 0.5F;
+            this._offset = 0.5F;
             this.isTargerScene = true;
 
-            this.asyncOperation = SceneManager.LoadSceneAsync(toLoad);
+            this._asyncOperation = SceneManager.LoadSceneAsync(_toLoad);
             StartCoroutine(this.CheckAsyncOperationProgress());
         }
 
@@ -208,15 +195,15 @@ namespace PofyTools.LevelLoader
 
         IEnumerator CheckAsyncOperationProgress()
         {
-            while (!this.asyncOperation.isDone)
+            while (!this._asyncOperation.isDone)
             {
-                float progress = this.asyncOperation.progress * 0.5f + this.offset;
+                float progress = this._asyncOperation.progress * 0.5f + this._offset;
                 //this.progress.text = string.Format("{0}%", (int)(progress * 100));
                 OnProgressChange(progress);
                 yield return null;
             }
 
-            this.asyncOperation = null;
+            this._asyncOperation = null;
             System.GC.Collect();
             Resources.UnloadUnusedAssets();
 
@@ -228,7 +215,7 @@ namespace PofyTools.LevelLoader
             {
                 this.Close();
 
-                OnLoadComplete();
+                OnLoadComplete(this._toLoad);
             }
         }
 
@@ -238,7 +225,7 @@ namespace PofyTools.LevelLoader
     public interface ILoadProgressListener : ISubscribable
     {
         void OnLoadProgressChange(float progress);
-        void OnLoadComplete();
-        void OnLoadStart();
+        void OnLoadComplete(string levelName);
+        void OnLoadStart(string levelName);
     }
 }
