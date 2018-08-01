@@ -5,6 +5,7 @@
     using UnityEngine;
     using PofyTools;
     using UnityEngine.UI;
+    using TMPro;
 
     public class NotificationView : Panel
     {
@@ -19,7 +20,7 @@
 
         public float duration = 3;
         [Header("UI Components")]
-        public Text message;
+        public TextMeshProUGUI message;
         public Image icon;
         public Image progress;
         public GameObject progressFrame;
@@ -31,6 +32,7 @@
         public float _progressTarget = 0;
         private Package _currentPackage;
 
+        private Sprite _defalutSprite;
         #region IInitializable
 
         public override bool Initialize()
@@ -50,6 +52,7 @@
                     return false;
                 }
 
+                this._defalutSprite = this.icon.sprite;
                 return true;
             }
             return false;
@@ -140,7 +143,7 @@
                 }
                 else
                 {
-                    this.icon.gameObject.SetActive(false);
+                    this.icon.sprite = this._defalutSprite;
                 }
 
                 //progress static

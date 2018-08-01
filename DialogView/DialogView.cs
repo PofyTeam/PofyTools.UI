@@ -3,6 +3,7 @@
     using UnityEngine;
     using UnityEngine.UI;
     using PofyTools;
+    using TMPro;
 
     public delegate void VoidDelegate();
 
@@ -25,8 +26,8 @@
         }
 
         #region UI Components
-        public Text message;
-        public Text confirmButtonText;
+        public TextMeshProUGUI message;
+        public TextMeshProUGUI confirmButtonText;
         public VoidDelegate confirmer;
         public VoidDelegate canceler;
         public Button cancel, confirm;
