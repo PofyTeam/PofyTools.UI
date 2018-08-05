@@ -162,7 +162,7 @@
                     this._progressTarget = -package.progress;
                 }
 
-                FadeIn();
+                FadeIn(0.3f);
             }
             else
             {
@@ -319,7 +319,7 @@
 
         public override void ExitState()
         {
-            this[0].FadeOut();
+            this[0].FadeOut(0.5f);
         }
     }
 

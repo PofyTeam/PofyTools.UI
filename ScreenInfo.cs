@@ -48,7 +48,7 @@ namespace PofyTools.UI
         }
 
         #region IPoolable implementation
-
+        public bool IsActive { get { return this.gameObject.activeSelf; } }
         public void Free()
         {
             RemoveAllStates(false);

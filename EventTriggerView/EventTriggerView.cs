@@ -48,15 +48,6 @@
 
         #region implemented abstract members of StateableActor
 
-        public override void ConstructAvailableStates()
-        {
-//			throw new System.NotImplementedException ();
-        }
-
-        public override void InitializeStateStack()
-        {
-//			throw new System.NotImplementedException ();
-        }
 
         #endregion
 
