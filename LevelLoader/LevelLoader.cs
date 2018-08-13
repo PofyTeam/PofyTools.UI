@@ -27,7 +27,7 @@ namespace PofyTools.LevelLoader
         [SerializeField]
         private string _toLoad;
 
-        private bool _shouldClose = false;
+        //private bool _shouldClose = false;
 
         private AsyncOperation _asyncOperation = null;
 
